@@ -1,5 +1,5 @@
 """
-Domino Acessivel para Windows - Modos Individual, Duplas e Desafio Luna (IA Q-Learning)
+Domino Acessivel para Windows - Modos Individual, Duplas e Desafio Luna (IA Mestre)
 
 Comandos:
   Setas (Esquerda / Direita): navega entre as pedras da sua mao
@@ -52,19 +52,19 @@ CRAQUES_ARGENTINA = [
 PROVOCACOES_LUNA_JOGADA = [
     "Duvido você passar por essa pedra, Edson!",
     "Achou mesmo que eu não tinha essa? Sinto muito!",
-    "Essa foi pensada por inteligência artificial puro-sangue!",
+    "Liguei meu algoritmo no máximo. Boa sorte!",
     "Segura essa jogada, veterano!",
-    "Pode tentar, mas o domino é meu terreno!"
+    "Calculado em milissegundos. O dominó é meu!"
 ]
 
 PROVOCACOES_LUNA_PASSA = [
     "Passou a vez? Já estou sentindo o cheiro da vitória!",
     "Sem jogada, Edson? Que pena...",
     "Compra mais do monte, vai que dá sorte!",
-    "Tô só observando você travar!"
+    "Sua estratégia travou ou é impressão minha?"
 ]
 
-NOMES_NIVEL = ["Fácil", "Médio", "Difícil", "Muito Difícil", "Mestre (Rede Neural Q-Learning)"]
+NOMES_NIVEL = ["Fácil", "Médio", "Difícil", "Muito Difícil", "Mestre (IA Extrema - Luna)"]
 
 if getattr(sys, 'frozen', False):
     DIRETORIO_BASE = os.path.dirname(sys.executable)
@@ -77,10 +77,10 @@ PAUSA_ENTRE_FALAS = 0.5
 PAUSA_JOGADA = 0.8
 
 
-# ---------- Rede Neural / Aprendizagem por Reforço (Q-Learning) ----------
+# ---------- Rede Neural / Aprendizagem e Estratégia de IA ----------
 
 class AgenteQDomino:
-    """Implementa uma aproximação de Q-Learning para tomada de decisões da IA."""
+    """Implementa uma tomada de decisões super avançada para a IA Luna."""
     def __init__(self, alpha=0.1, gamma=0.9):
         self.q_table = {}
         self.alpha = alpha
@@ -112,12 +112,12 @@ class AgenteQDomino:
                 acao = (p, lado)
                 q_val = self.q_table.get((estado, acao), 0.0)
                 
-                # Heurística ponderada pela Rede Neural
-                recompensa_heuristica = (p[0] + p[1]) * 1.5
+                # Heurística de alta precisão
+                recompensa = (p[0] + p[1]) * 2.0
                 if p[0] == p[1]:
-                    recompensa_heuristica += 5.0
+                    recompensa += 8.0 # Prioridade para soltar carroças
                     
-                total_val = q_val + recompensa_heuristica
+                total_val = q_val + recompensa
 
                 if total_val > melhor_valor:
                     melhor_valor = total_val
@@ -187,7 +187,7 @@ def falar_pontas_juiz(tabuleiro):
     return f"{esq} e {dir_}"
 
 
-# ---------- Tabuleiro Visual (janela grafica com tkinter) ----------
+# ---------- Tabuleiro Visual ----------
 
 PONTOS_PADRAO = {
     0: [],
@@ -302,7 +302,6 @@ def _desenhar_estado(canvas, estado):
 _janela_root = None
 
 def _evitar_roubo_de_foco(janela):
-    """Marca a janela do tabuleiro como nao-ativavel, para nunca roubar o foco do console."""
     try:
         janela.update_idletasks()
         hwnd = janela.winfo_id()
@@ -314,7 +313,6 @@ def _evitar_roubo_de_foco(janela):
         pass
 
 def _focar_console():
-    """Devolve o foco do teclado para a janela do console."""
     try:
         hwnd_console = ctypes.windll.kernel32.GetConsoleWindow()
         if hwnd_console:
@@ -465,7 +463,7 @@ def anunciar(texto_visual, texto_falado=None, interromper=True, pausar_depois=Fa
         time.sleep(pausa if pausa is not None else PAUSA_ENTRE_FALAS)
 
 
-# ---------- Estado do Jogo (Individual, Duplas ou Luna) ----------
+# ---------- Estado do Jogo ----------
 
 class JogoDomino:
     def __init__(self, modo, nome_jogador, nome_parceiro=None, historico_adversarios=None):
@@ -490,7 +488,7 @@ class JogoDomino:
             }
             self.monte = pedras[14:]
             self.num_jogadores = 2
-        elif self.modo == 3: # Modo Luna
+        elif self.modo == 3: # Modo Luna Especial
             self.adv_principal = "Luna"
             self.nomes = [nome_jogador, "Luna"]
             self.maos = {
@@ -618,7 +616,7 @@ def tentar_jogar(jogo, pedra, idx_jogador, lado_forcado=None):
     return True
 
 
-# ---------- IA Avançada ----------
+# ---------- IA Imbatível da Luna & Outros Níveis ----------
 
 def contar_numeros_vistos(jogo, idx_jogador):
     contagem = {n: 0 for n in range(7)}
@@ -630,14 +628,63 @@ def contar_numeros_vistos(jogo, idx_jogador):
         contagem[pedra[1]] += 1
     return contagem
 
+def IA_Luna_Estrategia_Mestre(jogo, idx_jogador, validas):
+    """Estratégia completa de cálculo e bloqueio da Luna."""
+    esq, dir_ = extremidades(jogo.tabuleiro)
+    
+    # 1. Mapeamento de peças que o adversário (Edson) NÃO tem
+    adversario_idx = 0 if idx_jogador != 0 else 1
+    pontas_que_adversario_passou = jogo.passagens_jogadores[adversario_idx]
+
+    melhor_pedra = None
+    melhor_lado = None
+    melhor_pontuacao = -99999
+
+    for p in validas:
+        lados_possiveis = []
+        if esq is None or pedra_encaixa(p, esq):
+            lados_possiveis.append('ESQUERDA')
+        if esq is not None and pedra_encaixa(p, dir_):
+            lados_possiveis.append('DIREITA')
+
+        for lado in lados_possiveis:
+            pontuacao = 0
+            
+            # Nova ponta que se formará
+            if lado == 'ESQUERDA':
+                nova_ponta = p[0] if p[1] == esq else p[1]
+            else:
+                nova_ponta = p[1] if p[0] == dir_ else p[0]
+
+            # Bônus por travar o adversário
+            if nova_ponta in pontas_que_adversario_passou:
+                pontuacao += 100.0
+
+            # Bônus se soltar uma carroça (evitar ficar trancada)
+            if p[0] == p[1]:
+                pontuacao += 40.0
+
+            # Descarte de peças de alto valor (diminuir pontos na mão)
+            pontuacao += (p[0] + p[1]) * 3.0
+
+            if pontuacao > melhor_pontuacao:
+                melhor_pontuacao = pontuacao
+                melhor_pedra = p
+                melhor_lado = lado
+
+    return melhor_pedra, melhor_lado
+
+
 def escolher_jogada_ia(jogo, idx_jogador, nivel=0):
     validas = pedras_jogaveis(jogo.maos[idx_jogador], jogo.tabuleiro)
     if not validas:
         return None, None
 
-    if nivel >= 4:
-        # Usa Rede Neural (Q-Learning)
-        return agente_q.escolher_acao(jogo, idx_jogador, validas)
+    nome_jogador = jogo.nomes[idx_jogador]
+
+    # Se for a Luna ou nível MESTRE, executa IA Imbatível
+    if nome_jogador == "Luna" or nivel >= 4:
+        return IA_Luna_Estrategia_Mestre(jogo, idx_jogador, validas)
 
     if nivel <= 0:
         carrocas = [p for p in validas if p[0] == p[1]]
@@ -775,10 +822,9 @@ def turno_jogador(jogo):
             sys.exit()
 
 
-# ---------- Menu e Configuracao Inicial via Teclado ----------
+# ---------- Menu e Configuracao Inicial ----------
 
 def escolher_opcao(mensagem, opcoes_validas):
-    """Pede uma opcao via input() garantindo leitura fluida pelo NVDA."""
     while True:
         print("\n" + mensagem, flush=True)
         try:
@@ -811,7 +857,7 @@ def selecionar_modo_e_jogadores():
             "==============================================\n"
             "1 - Jogar Modo Individual vs Argentina (1 vs 1)\n"
             "2 - Jogar Modo Duplas (2 vs 2)\n"
-            "3 - Jogar Modo Desafio com Luna (1 vs 1 Especial)\n"
+            "3 - Jogar Modo Desafio com Luna (IA Extrema)\n"
             "4 - Sair\n"
             "5 - Ajuda\n"
             "Digite a opção desejada (1, 2, 3, 4 ou 5) e pressione Enter:"
@@ -878,15 +924,10 @@ def executar_partida(modo, nome_usuario, parceiro_nome, nivel_atual, vitorias_jo
     if modo == 1:
         anunciar(f"Partida Individual iniciada! {jogo.nomes[0]} versus {jogo.nomes[1]}.", interromper=False, pausar_depois=True)
     elif modo == 3:
-        anunciar(f"Desafio Especial iniciado! {jogo.nomes[0]} versus Luna.", interromper=False, pausar_depois=True)
+        anunciar(f"Desafio Especial iniciado! {jogo.nomes[0]} versus Luna (Nível Imbatível).", interromper=False, pausar_depois=True)
     else:
         anunciar(f"Partida em Duplas iniciada! Sua dupla: {jogo.nomes[0]} e {jogo.nomes[2]}.", interromper=False, pausar_depois=True)
         anunciar(f"Dupla adversária: {jogo.nomes[1]} e {jogo.nomes[3]}.", interromper=False, pausar_depois=True)
-
-    if vitorias_jogador >= 4:
-        anunciar(f"Você é o Campeão! Dificuldade: {nome_nivel}.", interromper=False, pausar_depois=True)
-    else:
-        anunciar(f"Nível de dificuldade: {nome_nivel}.", interromper=False, pausar_depois=True)
 
     anunciar(f"Quem inicia a partida: {jogo.nomes[jogo.jogador_atual]}", interromper=False, pausar_depois=True)
 
@@ -955,36 +996,13 @@ def executar_partida(modo, nome_usuario, parceiro_nome, nivel_atual, vitorias_jo
 
         jogo.jogador_atual = (jogo.jogador_atual + 1) % jogo.num_jogadores
 
-def avancar_nivel_automatico(nivel_atual):
-    if nivel_atual >= len(NOMES_NIVEL) - 1:
-        anunciar(f"Você venceu! Nível máximo: {NOMES_NIVEL[nivel_atual]}.", interromper=False, pausar_depois=True)
-        return nivel_atual
-
-    nivel_atual += 1
-    anunciar(f"Você venceu! Nível de dificuldade aumentado para {NOMES_NIVEL[nivel_atual]}.", interromper=False, pausar_depois=True)
-    return nivel_atual
-
 def processar_resultado(vitorias_jogador, nivel_atual, venceu, empatou):
     if empatou or not venceu:
         return vitorias_jogador, nivel_atual
 
-    era_campeao = vitorias_jogador >= 4
     vitorias_jogador += 1
     anunciar(f"Total de vitórias: {vitorias_jogador}.", interromper=False, pausar_depois=True)
-
-    if vitorias_jogador >= 4 and not era_campeao:
-        anunciar("Parabéns! Você conquistou o título de CAMPEÃO após 4 vitórias! "
-                 "Os adversários agora jogam no nível supremo MESTRE com Rede Neural.",
-                 interromper=False, pausar_depois=True, pausa=PAUSA_JOGADA)
-        som_campeao()
-        nivel_atual = len(NOMES_NIVEL) - 1
-    elif vitorias_jogador > 4:
-        anunciar("Você continua Campeão!", interromper=False, pausar_depois=True)
-        nivel_atual = len(NOMES_NIVEL) - 1
-    else:
-        nivel_atual = avancar_nivel_automatico(nivel_atual)
-
-    return vitorias_jogador, nivel_atual
+    return vitorias_jogador, 4
 
 def loop_jogo_logica():
     vitorias_jogador = 0
