@@ -1,9 +1,11 @@
 package com.edson.dominoacessivel
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +22,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -165,6 +169,7 @@ fun PecaDominoVisual(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CartaTrucoVisual(
     carta: CartaTruco,
@@ -174,7 +179,8 @@ fun CartaTrucoVisual(
     posicaoNaMao: Int? = null,
     totalNaMao: Int? = null,
     rotuloContexto: String? = null,
-    aoClicar: (() -> Unit)? = null
+    aoClicar: (() -> Unit)? = null,
+    aoSegurar: (() -> Unit)? = null
 ) {
     val mostrarCoberta = carta.coberta || ocultarFace
     val falaCarta = if (mostrarCoberta) {
@@ -188,10 +194,12 @@ fun CartaTrucoVisual(
         ""
     }
     val prefixo = rotuloContexto?.let { "$it: " } ?: ""
-    val descricao = when {
-        aoClicar != null -> "${prefixo}$falaCarta$infoPosicao. Toque duas vezes para jogar na mesa."
-        else -> "$prefixo$falaCarta"
+    val instrucaoAcao = when {
+        aoClicar != null && aoSegurar != null -> ". Toque duas vezes para jogar aberta. Toque duas vezes e segure para jogar escondida."
+        aoClicar != null -> ". Toque duas vezes para jogar na mesa."
+        else -> ""
     }
+    val descricao = "${prefixo}$falaCarta$infoPosicao$instrucaoAcao"
     val estadoSelecao = if (destaque) {
         "Selecionada: $falaCarta"
     } else {
@@ -222,10 +230,12 @@ fun CartaTrucoVisual(
             .background(corFundoCarta, RoundedCornerShape(10.dp))
             .border(espessuraBorda, corBorda, RoundedCornerShape(10.dp))
             .then(
-                if (aoClicar != null) {
-                    Modifier.clickable(
-                        onClickLabel = "Jogar carta $falaCarta na mesa",
-                        onClick = { aoClicar() }
+                if (aoClicar != null || aoSegurar != null) {
+                    Modifier.combinedClickable(
+                        onClick = { aoClicar?.invoke() },
+                        onLongClick = if (aoSegurar != null) { { aoSegurar() } } else null,
+                        onClickLabel = "Jogar carta $falaCarta aberta na mesa",
+                        onLongClickLabel = if (aoSegurar != null) "Jogar carta $falaCarta escondida virada para baixo" else null
                     )
                 } else {
                     Modifier
@@ -233,10 +243,18 @@ fun CartaTrucoVisual(
             )
             .semantics(mergeDescendants = true) {
                 contentDescription = descricao
-                if (aoClicar != null) {
+                if (aoClicar != null || aoSegurar != null) {
                     stateDescription = estadoSelecao
                     selected = destaque
                     role = Role.Button
+                    if (aoSegurar != null) {
+                        customActions = listOf(
+                            CustomAccessibilityAction("Jogar carta escondida") {
+                                aoSegurar()
+                                true
+                            }
+                        )
+                    }
                 }
             }
             .padding(6.dp),

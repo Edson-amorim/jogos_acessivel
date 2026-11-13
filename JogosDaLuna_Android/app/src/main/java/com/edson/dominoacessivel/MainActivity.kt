@@ -1655,6 +1655,27 @@ class MainActivity : ComponentActivity() {
         acaoJogarCartaSelecionadaTruco()
     }
 
+    private fun acaoJogarCartaEscondidaDiretoTruco(indice: Int) {
+        val partida = partidaTrucoAtual ?: return
+        if (!aguardandoJogadaTrucoUsuario) {
+            audioVoz.tocarErro()
+            anunciarImediato("Aguarde a sua vez de jogar.", interromper = true)
+            return
+        }
+        val mao = partida.maoJogador
+        if (indice !in mao.indices) return
+
+        if (partida.quedaAtual < 2) {
+            audioVoz.tocarErro()
+            anunciarImediato("Na primeira queda não é permitido jogar carta escondida.", interromper = true)
+            return
+        }
+
+        partida.indiceCartaSelecionada = indice
+        partida.jogarProximaCoberta = true
+        acaoJogarCartaSelecionadaTruco()
+    }
+
     private fun acaoAlternarCartaCobertaTruco() {
         val partida = partidaTrucoAtual ?: return
         if (!aguardandoJogadaTrucoUsuario) return
@@ -2408,7 +2429,7 @@ class MainActivity : ComponentActivity() {
                     Text("• Botões ◀ Carta Anterior / Próxima Carta ▶: navegam pelas cartas da sua mão informando o naipe e se é Manilha (Pica-fumo, Espadilha, Copeta ou Zap).", color = CorTextoClaro, fontSize = 15.sp)
                     Text("• Botão JOGAR CARTA: desce a carta selecionada na mesa.", color = CorTextoClaro, fontSize = 15.sp)
                     Text("• Botão PEDIR TRUCO / SEIS / NOVE / DOZE: desafia a Rede Neural da Luna aumentando o valor da mão.", color = CorTextoClaro, fontSize = 15.sp)
-                    Text("• Botão CARTA COBERTA: disponível a partir da 2ª queda para jogar a carta virada para baixo.", color = CorTextoClaro, fontSize = 15.sp)
+                    Text("• Carta Escondida: para jogar virada para baixo (a partir da 2ª queda), dê 2 toques e segure na carta desejada (ou use o botão CARTA COBERTA).", color = CorTextoClaro, fontSize = 15.sp)
                     Text("• Botão OUVIR MESA: anuncia o placar, a carta Vira, a Manilha e as cartas jogadas na queda atual.", color = CorTextoClaro, fontSize = 15.sp)
                 }
             }
@@ -3101,7 +3122,8 @@ class MainActivity : ComponentActivity() {
                                         ocultarFace = partida.ehMaoDeFerro,
                                         posicaoNaMao = idx + 1,
                                         totalNaMao = maoJog.size,
-                                        aoClicar = { acaoJogarCartaDiretoTruco(idx) }
+                                        aoClicar = { acaoJogarCartaDiretoTruco(idx) },
+                                        aoSegurar = { acaoJogarCartaEscondidaDiretoTruco(idx) }
                                     )
                                 }
                             }
