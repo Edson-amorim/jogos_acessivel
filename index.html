@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos Luna Acessíveis - Aplicativo Android</title>
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --secondary: #2c5282;
+            --accent: #e87d2e;
+            --background: #f5f0e6;
+            --text: #1b2a42;
+            --card: #ffffff;
+            --danger: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #667085;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            padding: 10px;
+        }
+
+        .game-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 35px rgba(30, 58, 95, 0.2);
+            border-color: var(--primary);
+        }
+
+        .game-card:hover .game-icon {
+            transform: scale(1.1);
+        }
+
+        .game-card:active {
+            transform: translateY(-2px);
+        }
+
+        .game-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 25px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            transition: transform 0.2s ease;
+            display: block;
+        }
+
+        .game-card h3 {
+            margin: 15px 0 8px;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .game-card p {
+            color: #667085;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: auto;
+            align-self: flex-start;
+        }
+
+        .game-card.truco .game-icon {
+            filter: none;
+        }
+
+        .instructions-section {
+            background: #f1f2f6;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+            max-width: 900px;
+            width: 100%;
+            border: 1px solid #e2e8f0;
+        }
+
+        .instructions-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .instructions-section ul {
+            color: #475467;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        .instructions-section li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #667085;
+            font-size: 0.75rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .store-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .store-badge {
+            width: 140px;
+            text-align: center;
+            padding: 8px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .game-grid {
+                gap: 12px;
+            }
+            .game-card {
+                padding: 25px 15px;
+            }
+            .game-icon {
+                width: 50px;
+                height: 50px;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Jogos Luna Acessíveis</h1>
+    <p class="subtitle">Coleção de jogos para diversão e acessibilidade</p>
+
+    <div class="game-grid">
+        <!-- Domino Card -->
+        <a href="domino.html" class="game-card hard">
+            <div class="game-icon">🎴</div>
+            <h3>Domino Acessível</h3>
+            <p>Modos Individual, Duplas e Desafio contra a Luna (IA Bayesiana/Monte Carlo)</p>
+            <span class="badge">Android & PC</span>
+        </a>
+
+        <!-- Truco Card -->
+        <a href="https://lucassf.github.io/ai4good/truco/" target="_blank" class="game-card" rel="noopener noreferrer">
+            <div class="game-icon">♠️</div>
+            <h3>Truco Paulista</h3>
+            <p>Jogo de truco regional com interface totalmente acessível e IA da Luna</p>
+            <span class="badge">Android & Web</span>
+        </a>
+
+        <!-- Academia Python Card -->
+        <a href="JogosDaLuna.apk" class="game-card">
+            <div class="game-icon">🐍</div>
+            <h3>Academia Python da Luna</h3>
+            <p>Aprenda programação com áudio, 8 módulos interativos, maratona de quiz e jogo da forca</p>
+            <span class="badge">Android & PC</span>
+        </a>
+    </div>
+
+    <div class="instructions-section">
+        <h3>Como Jogar</h3>
+        <ul>
+            <li><strong>Domino:</strong> Use as setas para navegar pelas pedras da sua mão. Pressione Espaço para jogar a pedra selecionada. Tab para comprar do monte. Backspace para passar a vez.</li>
+            <li><strong>Truco:</strong> Use as teclas 1, 2, 3 para jogar cartas. Pressione T para pedir Truco, A para aceitar desafio, C para correr, R para retrucar. Atalhos: S (resumo), M (som), V (voz), H (ajuda).</li>
+            <li><strong>Academia Python:</strong> Navegue pelas opções com setas ou teclado numérico (1 a 7). Pressione Espaço ou Enter para confirmar. Tecla V altera a velocidade da voz da Professora Luna e R repete a explicação.</li>
+        </ul>
+        <p>Cada jogo foi desenvolvido com foco em acessibilidade, supindo leitores de tela e controle total por teclado.</p>
+    </div>
+
+    <footer class="footer">
+        <div class="store-badges">
+            <div class="store-badge">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath fill='%23e6e1e8' d='M27.5 18c0-4.14-3.37-7.5-7.5-7.5S9.5 9.86 9.5 14s3.37 7.5 7.5 7.5Zm-8.7 5.4c-.96-2.37-3.67-3-6-3S3.5 19.63 3.5 22s3.04 3 6 3c1.57 0 2.93-.33 4.18-.88L9.7 27.6c-.2 1.53-.12 2.93.7 4.12 1.3 1.68 3.8 1.84 4.5.5 1.23-1.85 2.32-3.54 2.32-3.15 0-5.36-1.6-5.36-3.57Z'/%3E%3Cpath fill='%231e3a5f' d='M22.17 20.05c-.25-.48-.25-1.13 0-1.61l10.15-9.98A5.985 5.985 0 0 1 23.5 8c-1.12 0-2.22.27-3.24.63l-8.37 8.23a3.56 3.56 0 0 1-2.32-2.06l-4.16 4.35a3.59 3.59 0 0 1-1.79-.94l-10.67 10.15Z'/%3E%3C/svg%3E" alt="Google Play" style="width:100%;height:100%;background-color:#fff;border-radius:8px;">
+                <span style="display:block;font-size:0.6rem;margin-top=2px;">Google Play</span>
+            </div>
+            <div class="store-badge">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath fill='%23e6e1e8' d='M27.5 18c0-4.14-3.37-7.5-7.5-7.5S9.5 9.86 9.5 14s3.37 7.5 7.5 7.5Zm-8.7 5.4c-.96-2.37-3.67-3-6-3S3.5 19.63 3.5 22s3.04 3 6 3c1.57 0 2.93-.33 4.18-.88L9.7 27.6c-.2 1.53-.12 2.93.7 4.12 1.3 1.68 3.8 1.84 4.5.5 1.23-1.85 2.32-3.54 2.32-3.15 0-5.36-1.6-5.36-3.57Z'/%3E%3Cpath fill='%231e3a5f' d='M22.17 20.05c-.25-.48-.25-1.13 0-1.61l10.15-9.98A5.985 5.985 0 0 1 23.5 8c-1.12 0-2.22.27-3.24.63l-8.37 8.23a3.56 3.56 0 0 1-2.32-2.06l-4.16 4.35a3.59 3.59 0 0 1-1.79-.94l-10.67 10.15Z'/%3E%3C/svg%3E" alt="Amazon Appstore" style="width:100%;height:100%;background-color:#fff;border-radius:8px;">
+                <span style="display:block;font-size:0.6rem;margin-top=2px;">Amazon Appstore</span>
+            </div>
+        </div>
+        <p style="text-align:center;margin:10px 0;font-size:0.7rem;color:#98a2a9;">Versão 1.0 - Jogos adaptados para acessibilidade</p>
+    </footer>
+</body>
+</html>

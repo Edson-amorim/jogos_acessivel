@@ -123,6 +123,44 @@ def campeao():
     ])
 
 
+def aplausos():
+    """Gera som de aplausos e palmas de plateia entusiasmada."""
+    duracao = 2.8
+    n_total = int(TAXA * duracao)
+    amostras = [0.0] * n_total
+    random.seed(42)
+    num_pessoas = 25
+    for p in range(num_pessoas):
+        tempo_atual = random.uniform(0.0, 0.25)
+        cadencia = random.uniform(0.20, 0.32)
+        intensidade = random.uniform(0.5, 1.0)
+        while tempo_atual < duracao - 0.1:
+            idx_inicio = int(tempo_atual * TAXA)
+            tam_palma = int(TAXA * random.uniform(0.025, 0.045))
+            freq_estalo = random.uniform(1200, 2400)
+            for i in range(tam_palma):
+                if idx_inicio + i >= n_total:
+                    break
+                env = math.exp(-i / (TAXA * 0.007))
+                ruido = random.uniform(-1, 1) * 0.7
+                tom_val = math.sin(2 * math.pi * freq_estalo * i / TAXA) * 0.3
+                amostras[idx_inicio + i] += (ruido + tom_val) * env * intensidade
+            tempo_atual += cadencia + random.uniform(-0.03, 0.03)
+
+    for i in range(n_total):
+        prog = i / n_total
+        if prog < 0.15:
+            env_geral = prog / 0.15
+        elif prog > 0.75:
+            env_geral = (1.0 - prog) / 0.25
+        else:
+            env_geral = 1.0
+        amostras[i] *= env_geral
+
+    pico = max(abs(x) for x in amostras) or 1.0
+    return [x / pico * 0.95 for x in amostras]
+
+
 def main():
     pasta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sons")
     os.makedirs(pasta, exist_ok=True)
@@ -135,6 +173,7 @@ def main():
         "vitoria.wav": vitoria(),
         "derrota.wav": derrota(),
         "campeao.wav": campeao(),
+        "aplausos.wav": aplausos(),
     }
 
     for nome_arquivo, amostras in sons.items():

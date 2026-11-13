@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Android / Gradle builds
+.gradle/
+*/.gradle/
+build/
+*/build/
+*/*/build/
+local.properties
+*/local.properties
+*.iml
+.idea/
+*/.idea/
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+*.jks
+*.bak

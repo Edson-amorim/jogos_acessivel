@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino Acessível - Luna IA</title>
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --secondary: #2c5282;
+            --accent: #e87d2e;
+            --background: #f5f0e6;
+            --text: #1b2a42;
+            --card: #ffffff;
+            --green: #064e3b;
+            --stone: #2d3748;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 20px 0;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .description {
+            color: #667085;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .game-visual {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .controls-info {
+            background: #f1f2f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .controls-info h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .controls-info ul {
+            color: #475467;
+            text-align: left;
+            display: inline-block;
+            margin: 0;
+        }
+
+        .controls-info li {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+
+        .instructions {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .instructions h2 {
+            color: var(--primary);
+            margin: 25px 0 15px;
+            font-size: 1.2rem;
+        }
+
+        .instructions p {
+            color: #475467;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 30px 0;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover {
+            background: #2d4a74;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .game-visual {
+                margin: 15px 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Domino Acessível</h1>
+    <p class="description">Jogo de domino com IA Luna - Bayesiana e Monte Carlo</p>
+
+    <div class="game-visual">
+        <h2>Objetivo</h2>
+        <p>O objetivo é ser o jogador com menor pontuação ao final da partida. As peças (pedras) são compostas por dois valores de 0 a 6.</p>
+
+        <h2>Controles</h2>
+        <div class="controls-info">
+            <h3>Controles do Teclado</h3>
+            <ul>
+                <li><strong>Setas (Esquerda/Direita):</strong> Navega entre as pedras da sua mão</li>
+                <li><strong>Barra de Espaço:</strong> Joga a pedra selecionada</li>
+                <li><strong>Tab:</strong> Compra uma pedra do monte (modo 1x1)</li>
+                <li><strong>Backspace:</strong> Passa a vez quando não houver jogada válida</li>
+                <li><strong>T / Enter / J:</strong> Mostra as pontas da mesa</li>
+                <li><strong>Esc:</strong> Sai do jogo</li>
+            </ul>
+        </div>
+
+        <p>Contra a Luna, você enfrenta um algoritmo avançado combinando inferência Bayesiana com simulação Monte Carlo. Ela vai provocá-LO durante o jogo!</p>
+
+        <a href="index.html" class="back-link">← Voltar ao Menu Principal</a>
+    </div>
+</body>
+</html>

@@ -51,7 +51,7 @@ CRAQUES_ARGENTINA = [
 
 # --- PROVOCAÇÕES SÁDICAS E AGRESSIVAS DA LUNA ---
 PROVOCACOES_LUNA_JOGADA = [
-    "Achou mesmo que tinha alguma chance contra minha inferência bayesiana, Edson?",
+    "Achou mesmo que tinha alguma chance contra minha inferência bayesiana, {nome}?",
     "Simulei essa sua derrota em 500 cenários Monte Carlo antes de mover essa pedra!",
     "Sentiu o peso da matemática? Essa vai doer na sua pontuação!",
     "Sua probabilidade de vitória acabou de cair para zero!",
@@ -60,7 +60,7 @@ PROVOCACOES_LUNA_JOGADA = [
 ]
 
 PROVOCACOES_LUNA_PASSA = [
-    "Passou a vez de novo? Que vergonha, Edson! Treina mais!",
+    "Passou a vez de novo? Que vergonha, {nome}! Treina mais!",
     "Entrou em colapso? Compra do monte e chora em silêncio!",
     "Adoro ver você completamente travado! Minha distribuição de probabilidade acertou em cheio!",
     "Qual a sensação de ser dominado por poucas linhas de código?",
@@ -76,8 +76,8 @@ else:
 
 PASTA_SONS = os.path.join(DIRETORIO_BASE, "sons")
 
-PAUSA_ENTRE_FALAS = 0.5
-PAUSA_JOGADA = 0.8
+PAUSA_ENTRE_FALAS = 1.5
+PAUSA_JOGADA = 2.0
 
 
 # ---------- Motor de Inferência Bayesiana e Monte Carlo ----------
@@ -704,7 +704,8 @@ def tentar_jogar(jogo, pedra, idx_jogador, lado_forcado=None):
 
     # Provocações Sádicas da Luna ao jogar
     if nome == "Luna" and random.random() < 0.8:
-        provocacao = random.choice(PROVOCACOES_LUNA_JOGADA)
+        nome_alvo = jogo.nomes[0] if hasattr(jogo, "nomes") and jogo.nomes else "jogador"
+        provocacao = random.choice(PROVOCACOES_LUNA_JOGADA).format(nome=nome_alvo)
         anunciar(f'Luna diz: "{provocacao}"', f'Luna diz: {provocacao}', interromper=False, pausar_depois=True)
 
     return True
@@ -833,7 +834,8 @@ def turno_jogador(jogo):
                 
                 # Provocação Sádica da Luna ao passar a vez
                 if jogo.adv_principal == "Luna":
-                    provocacao = random.choice(PROVOCACOES_LUNA_PASSA)
+                    nome_alvo = jogo.nomes[0] if hasattr(jogo, "nomes") and jogo.nomes else "jogador"
+                    provocacao = random.choice(PROVOCACOES_LUNA_PASSA).format(nome=nome_alvo)
                     anunciar(f'Luna diz: "{provocacao}"', f'Luna diz: {provocacao}', interromper=False, pausar_depois=True)
                 return
 
@@ -902,7 +904,12 @@ def selecionar_modo_e_jogadores():
         elif opcao == '5':
             exibir_ajuda()
 
-    nome_usuario = "Edson"
+    print("\nInforme seu nome de jogador:")
+    try:
+        nome_dig = input("Nome (pressione Enter para manter Edson): ").strip()
+        nome_usuario = nome_dig if nome_dig else "Edson"
+    except Exception:
+        nome_usuario = "Edson"
     print(f"Jogador registrado: {nome_usuario}", flush=True)
 
     parceiro_nome = None

@@ -1,5 +1,5 @@
 """
-Domino Acessivel para Windows - Modos Individual, Duplas e Desafio Luna (IA Mestre)
+Domino Acessivel para Windows - Modos Individual, Duplas e Desafio Luna (IA Mestre Bayesiana/Monte Carlo)
 
 Comandos:
   Setas (Esquerda / Direita): navega entre as pedras da sua mao
@@ -19,6 +19,7 @@ import time
 import threading
 import queue
 import ctypes
+import math
 
 try:
     from accessible_output2.outputs.auto import Auto
@@ -48,23 +49,25 @@ CRAQUES_ARGENTINA = [
     "Mascherano", "Crespo", "Caniggia", "Aimar"
 ]
 
-# --- PROVOCAÇÕES DA LUNA ---
+# --- PROVOCAÇÕES SÁDICAS E AGRESSIVAS DA LUNA ---
 PROVOCACOES_LUNA_JOGADA = [
-    "Duvido você passar por essa pedra, Edson!",
-    "Achou mesmo que eu não tinha essa? Sinto muito!",
-    "Liguei meu algoritmo no máximo. Boa sorte!",
-    "Segura essa jogada, veterano!",
-    "Calculado em milissegundos. O dominó é meu!"
+    "Achou mesmo que tinha alguma chance contra minha inferência bayesiana, {nome}?",
+    "Simulei essa sua derrota em 500 cenários Monte Carlo antes de mover essa pedra!",
+    "Sentiu o peso da matemática? Essa vai doer na sua pontuação!",
+    "Sua probabilidade de vitória acabou de cair para zero!",
+    "Pode chorar pro teclado, veterano. Essa mesa é minha!",
+    "Patético... Eu já sabia que você não tinha a resposta pra essa pedra!"
 ]
 
 PROVOCACOES_LUNA_PASSA = [
-    "Passou a vez? Já estou sentindo o cheiro da vitória!",
-    "Sem jogada, Edson? Que pena...",
-    "Compra mais do monte, vai que dá sorte!",
-    "Sua estratégia travou ou é impressão minha?"
+    "Passou a vez de novo? Que vergonha, {nome}! Treina mais!",
+    "Entrou em colapso? Compra do monte e chora em silêncio!",
+    "Adoro ver você completamente travado! Minha distribuição de probabilidade acertou em cheio!",
+    "Qual a sensação de ser dominado por poucas linhas de código?",
+    "Pode ir passando a vez... Só estou saboreando a sua derrota!"
 ]
 
-NOMES_NIVEL = ["Fácil", "Médio", "Difícil", "Muito Difícil", "Mestre (IA Extrema - Luna)"]
+NOMES_NIVEL = ["Fácil", "Médio", "Difícil", "Muito Difícil", "SÁDICA (Monte Carlo & Bayes)"]
 
 if getattr(sys, 'frozen', False):
     DIRETORIO_BASE = os.path.dirname(sys.executable)
@@ -73,33 +76,124 @@ else:
 
 PASTA_SONS = os.path.join(DIRETORIO_BASE, "sons")
 
-PAUSA_ENTRE_FALAS = 0.5
-PAUSA_JOGADA = 0.8
+PAUSA_ENTRE_FALAS = 1.5
+PAUSA_JOGADA = 2.0
 
 
-# ---------- Rede Neural / Aprendizagem e Estratégia de IA ----------
+# ---------- Motor de Inferência Bayesiana e Monte Carlo ----------
 
-class AgenteQDomino:
-    """Implementa uma tomada de decisões super avançada para a IA Luna."""
-    def __init__(self, alpha=0.1, gamma=0.9):
-        self.q_table = {}
-        self.alpha = alpha
-        self.gamma = gamma
+class MotorLunaBayesMonteCarlo:
+    """Motor de inteligência extrema combinando estatística Bayesiana com Simulação de Monte Carlo."""
 
-    def obter_estado_chaves(self, jogo, idx_jogador):
-        esq, dir_ = extremidades(jogo.tabuleiro)
-        qtd_mao = len(jogo.maos[idx_jogador])
-        qtd_monte = len(jogo.monte)
-        return (esq, dir_, qtd_mao, qtd_monte)
+    def __init__(self):
+        self.todas_pedras = [(i, j) for i in range(7) for j in range(i, 7)]
 
-    def escolher_acao(self, jogo, idx_jogador, validas):
-        if not validas:
-            return None, None
-            
-        estado = self.obter_estado_chaves(jogo, idx_jogador)
-        esq_atual, dir_atual = extremidades(jogo.tabuleiro)
+    def atualizar_crencas_bayesianas(self, jogo, idx_luna):
+        idx_edson = 0 if idx_luna != 0 else 1
+        pedras_conhecidas = set(jogo.tabuleiro + jogo.maos[idx_luna])
+        pedras_desconhecidas = [p for p in self.todas_pedras if p not in pedras_conhecidas]
         
-        melhor_valor = -float('inf')
+        passagens = jogo.passagens_jogadores[idx_edson]
+        probabilidades = {}
+
+        for p in pedras_desconhecidas:
+            prob = 1.0
+            # Se Edson passou em pontas que continham o número de 'p', P(p na mão do Edson) vai a zero.
+            for num_travado in passagens:
+                if p[0] == num_travado or p[1] == num_travado:
+                    prob = 0.001
+                    break
+            probabilidades[p] = prob
+
+        total_prob = sum(probabilidades.values())
+        if total_prob > 0:
+            for p in probabilidades:
+                probabilidades[p] /= total_prob
+
+        return probabilidades, pedras_desconhecidas
+
+    def simular_monte_carlo(self, jogo, idx_luna, acao_proposta, num_simulacoes=250):
+        pedra, lado = acao_proposta
+        vitorias = 0
+        idx_edson = 0 if idx_luna != 0 else 1
+        probs_edson, pedras_ocultas = self.atualizar_crencas_bayesianas(jogo, idx_luna)
+
+        if not pedras_ocultas:
+            return 0
+
+        for _ in range(num_simulacoes):
+            # Amostragem condicional do estado hipotético do Edson
+            qtd_edson = len(jogo.maos[idx_edson])
+            
+            # Escolhe pedras prováveis para o Edson baseado na inferência Bayesiana
+            pesos = [probs_edson[p] for p in pedras_ocultas]
+            if sum(pesos) == 0:
+                mao_simulada_edson = random.sample(pedras_ocultas, min(qtd_edson, len(pedras_ocultas)))
+            else:
+                # Amostragem ponderada sem reposição simples
+                amostra = set()
+                candidatos = list(pedras_ocultas)
+                c_pesos = list(pesos)
+                while len(amostra) < min(qtd_edson, len(candidatos)):
+                    escolhida = random.choices(candidatos, weights=c_pesos, k=1)[0]
+                    amostra.add(escolhida)
+                    idx_rem = candidatos.index(escolhida)
+                    candidatos.pop(idx_rem)
+                    c_pesos.pop(idx_rem)
+                mao_simulada_edson = list(amostra)
+
+            # Executa simulação leve de jogo até o fim
+            tabuleiro_sim = list(jogo.tabuleiro)
+            esq, dir_ = extremidades(tabuleiro_sim)
+
+            if esq is None:
+                tabuleiro_sim.append(pedra)
+            elif lado == 'ESQUERDA':
+                tabuleiro_sim.insert(0, orientar_para_esquerda(pedra, esq))
+            else:
+                tabuleiro_sim.append(orientar_para_direita(pedra, dir_))
+
+            mao_luna_sim = [p for p in jogo.maos[idx_luna] if p != pedra]
+            mao_edson_sim = list(mao_simulada_edson)
+
+            vez = idx_edson
+            bloqueios = 0
+            while len(mao_luna_sim) > 0 and len(mao_edson_sim) > 0 and bloqueios < 2:
+                m_atual = mao_edson_sim if vez == idx_edson else mao_luna_sim
+                validas_sim = pedras_jogaveis(m_atual, tabuleiro_sim)
+
+                if validas_sim:
+                    p_jogada = random.choice(validas_sim)
+                    e_s, d_s = extremidades(tabuleiro_sim)
+                    if pedra_encaixa(p_jogada, e_s):
+                        tabuleiro_sim.insert(0, orientar_para_esquerda(p_jogada, e_s))
+                    else:
+                        tabuleiro_sim.append(orientar_para_direita(p_jogada, d_s))
+                    m_atual.remove(p_jogada)
+                    bloqueios = 0
+                else:
+                    bloqueios += 1
+
+                vez = 1 - vez
+
+            # Avaliação de Resultado do Rollout
+            if len(mao_luna_sim) == 0:
+                vitorias += 3.0
+            elif len(mao_edson_sim) == 0:
+                vitorias -= 3.0
+            else:
+                pts_luna = sum(a + b for a, b in mao_luna_sim)
+                pts_edson = sum(a + b for a, b in mao_edson_sim)
+                if pts_luna < pts_edson:
+                    vitorias += 1.5
+                else:
+                    vitorias -= 1.5
+
+        return vitorias
+
+    def escolher_melhor_jogada(self, jogo, idx_luna, validas):
+        esq_atual, dir_atual = extremidades(jogo.tabuleiro)
+        melhor_pontuacao = -float('inf')
         melhor_pedra = validas[0]
         melhor_lado = None
 
@@ -109,24 +203,24 @@ class AgenteQDomino:
             if esq_atual is not None and pedra_encaixa(p, dir_atual): lados.append('DIREITA')
 
             for lado in lados:
-                acao = (p, lado)
-                q_val = self.q_table.get((estado, acao), 0.0)
-                
-                # Heurística de alta precisão
-                recompensa = (p[0] + p[1]) * 2.0
-                if p[0] == p[1]:
-                    recompensa += 8.0 # Prioridade para soltar carroças
-                    
-                total_val = q_val + recompensa
+                # Avaliação por Monte Carlo Tree Search Rollouts
+                score_mc = self.simular_monte_carlo(jogo, idx_luna, (p, lado), num_simulacoes=200)
 
-                if total_val > melhor_valor:
-                    melhor_valor = total_val
+                # Heurísticas Agressivas Adicionais
+                score_heuristico = (p[0] + p[1]) * 2.0
+                if p[0] == p[1]:
+                    score_heuristico += 15.0 # Desfaz rápido das carroças
+
+                total_score = score_mc + score_heuristico
+
+                if total_score > melhor_pontuacao:
+                    melhor_pontuacao = total_score
                     melhor_pedra = p
                     melhor_lado = lado
 
         return melhor_pedra, melhor_lado
 
-agente_q = AgenteQDomino()
+motor_luna = MotorLunaBayesMonteCarlo()
 
 
 # ---------- Sons Estilo Domino / Interface ----------
@@ -488,7 +582,7 @@ class JogoDomino:
             }
             self.monte = pedras[14:]
             self.num_jogadores = 2
-        elif self.modo == 3: # Modo Luna Especial
+        elif self.modo == 3: # Modo Desafio Luna Sádica
             self.adv_principal = "Luna"
             self.nomes = [nome_jogador, "Luna"]
             self.maos = {
@@ -608,72 +702,16 @@ def tentar_jogar(jogo, pedra, idx_jogador, lado_forcado=None):
     anunciar(f"{nome} jogou {formatar_pedra(pedra)} na {lado.lower()}", fala_juiz,
              interromper=False, pausar_depois=True, pausa=PAUSA_JOGADA)
 
-    # Provocações da Luna ao jogar
-    if nome == "Luna" and random.random() < 0.6:
-        provocacao = random.choice(PROVOCACOES_LUNA_JOGADA)
+    # Provocações Sádicas da Luna ao jogar
+    if nome == "Luna" and random.random() < 0.8:
+        nome_alvo = jogo.nomes[0] if hasattr(jogo, "nomes") and jogo.nomes else "jogador"
+        provocacao = random.choice(PROVOCACOES_LUNA_JOGADA).format(nome=nome_alvo)
         anunciar(f'Luna diz: "{provocacao}"', f'Luna diz: {provocacao}', interromper=False, pausar_depois=True)
 
     return True
 
 
-# ---------- IA Imbatível da Luna & Outros Níveis ----------
-
-def contar_numeros_vistos(jogo, idx_jogador):
-    contagem = {n: 0 for n in range(7)}
-    for pedra in jogo.tabuleiro:
-        contagem[pedra[0]] += 1
-        contagem[pedra[1]] += 1
-    for pedra in jogo.maos[idx_jogador]:
-        contagem[pedra[0]] += 1
-        contagem[pedra[1]] += 1
-    return contagem
-
-def IA_Luna_Estrategia_Mestre(jogo, idx_jogador, validas):
-    """Estratégia completa de cálculo e bloqueio da Luna."""
-    esq, dir_ = extremidades(jogo.tabuleiro)
-    
-    # 1. Mapeamento de peças que o adversário (Edson) NÃO tem
-    adversario_idx = 0 if idx_jogador != 0 else 1
-    pontas_que_adversario_passou = jogo.passagens_jogadores[adversario_idx]
-
-    melhor_pedra = None
-    melhor_lado = None
-    melhor_pontuacao = -99999
-
-    for p in validas:
-        lados_possiveis = []
-        if esq is None or pedra_encaixa(p, esq):
-            lados_possiveis.append('ESQUERDA')
-        if esq is not None and pedra_encaixa(p, dir_):
-            lados_possiveis.append('DIREITA')
-
-        for lado in lados_possiveis:
-            pontuacao = 0
-            
-            # Nova ponta que se formará
-            if lado == 'ESQUERDA':
-                nova_ponta = p[0] if p[1] == esq else p[1]
-            else:
-                nova_ponta = p[1] if p[0] == dir_ else p[0]
-
-            # Bônus por travar o adversário
-            if nova_ponta in pontas_que_adversario_passou:
-                pontuacao += 100.0
-
-            # Bônus se soltar uma carroça (evitar ficar trancada)
-            if p[0] == p[1]:
-                pontuacao += 40.0
-
-            # Descarte de peças de alto valor (diminuir pontos na mão)
-            pontuacao += (p[0] + p[1]) * 3.0
-
-            if pontuacao > melhor_pontuacao:
-                melhor_pontuacao = pontuacao
-                melhor_pedra = p
-                melhor_lado = lado
-
-    return melhor_pedra, melhor_lado
-
+# ---------- IA Sádica da Luna e Execução de Turno ----------
 
 def escolher_jogada_ia(jogo, idx_jogador, nivel=0):
     validas = pedras_jogaveis(jogo.maos[idx_jogador], jogo.tabuleiro)
@@ -682,32 +720,15 @@ def escolher_jogada_ia(jogo, idx_jogador, nivel=0):
 
     nome_jogador = jogo.nomes[idx_jogador]
 
-    # Se for a Luna ou nível MESTRE, executa IA Imbatível
+    # Ativa o motor Bayesiano / Monte Carlo se for a Luna ou Nível SÁDICO
     if nome_jogador == "Luna" or nivel >= 4:
-        return IA_Luna_Estrategia_Mestre(jogo, idx_jogador, validas)
+        return motor_luna.escolher_melhor_jogada(jogo, idx_jogador, validas)
 
-    if nivel <= 0:
-        carrocas = [p for p in validas if p[0] == p[1]]
-        if carrocas:
-            return max(carrocas, key=sum), None
-        return max(validas, key=sum), None
-
-    contagem_vista = contar_numeros_vistos(jogo, idx_jogador)
-    peso_bloqueio = 2 if nivel >= 2 else 0
-    peso_descarte = 2 if nivel >= 3 else 1
-
-    melhor_pedra = None
-    melhor_pontuacao = None
-    for pedra in validas:
-        pontuacao = (pedra[0] + pedra[1]) * peso_descarte
-        if pedra[0] == pedra[1]:
-            pontuacao += 6
-        if peso_bloqueio:
-            pontuacao += (contagem_vista.get(pedra[0], 0) + contagem_vista.get(pedra[1], 0)) * peso_bloqueio
-        if melhor_pontuacao is None or pontuacao > melhor_pontuacao:
-            melhor_pontuacao = pontuacao
-            melhor_pedra = pedra
-    return melhor_pedra, None
+    # Níveis básicos de fallback
+    carrocas = [p for p in validas if p[0] == p[1]]
+    if carrocas:
+        return max(carrocas, key=sum), None
+    return max(validas, key=sum), None
 
 def turno_ia(jogo, idx_jogador, nivel=0):
     nome = jogo.nomes[idx_jogador]
@@ -811,9 +832,10 @@ def turno_jogador(jogo):
                 som_passar()
                 anunciar("Passou a vez.", interromper=False, pausar_depois=True, pausa=PAUSA_JOGADA)
                 
-                # Provocação da Luna se o jogador passar a vez
-                if jogo.adv_principal == "Luna" and random.random() < 0.8:
-                    provocacao = random.choice(PROVOCACOES_LUNA_PASSA)
+                # Provocação Sádica da Luna ao passar a vez
+                if jogo.adv_principal == "Luna":
+                    nome_alvo = jogo.nomes[0] if hasattr(jogo, "nomes") and jogo.nomes else "jogador"
+                    provocacao = random.choice(PROVOCACOES_LUNA_PASSA).format(nome=nome_alvo)
                     anunciar(f'Luna diz: "{provocacao}"', f'Luna diz: {provocacao}', interromper=False, pausar_depois=True)
                 return
 
@@ -857,7 +879,7 @@ def selecionar_modo_e_jogadores():
             "==============================================\n"
             "1 - Jogar Modo Individual vs Argentina (1 vs 1)\n"
             "2 - Jogar Modo Duplas (2 vs 2)\n"
-            "3 - Jogar Modo Desafio com Luna (IA Extrema)\n"
+            "3 - Jogar Modo Desafio  com Luna (Bayes/Monte Carlo)\n"
             "4 - Sair\n"
             "5 - Ajuda\n"
             "Digite a opção desejada (1, 2, 3, 4 ou 5) e pressione Enter:"
@@ -874,7 +896,7 @@ def selecionar_modo_e_jogadores():
             break
         elif opcao == '3':
             modo = 3
-            print("\nModo Desafio Luna selecionado.", flush=True)
+            print("\nmodo luna.", flush=True)
             break
         elif opcao == '4':
             print("Saindo do jogo.", flush=True)
@@ -882,7 +904,12 @@ def selecionar_modo_e_jogadores():
         elif opcao == '5':
             exibir_ajuda()
 
-    nome_usuario = "Edson"
+    print("\nInforme seu nome de jogador:")
+    try:
+        nome_dig = input("Nome (pressione Enter para manter Edson): ").strip()
+        nome_usuario = nome_dig if nome_dig else "Edson"
+    except Exception:
+        nome_usuario = "Edson"
     print(f"Jogador registrado: {nome_usuario}", flush=True)
 
     parceiro_nome = None
@@ -924,7 +951,7 @@ def executar_partida(modo, nome_usuario, parceiro_nome, nivel_atual, vitorias_jo
     if modo == 1:
         anunciar(f"Partida Individual iniciada! {jogo.nomes[0]} versus {jogo.nomes[1]}.", interromper=False, pausar_depois=True)
     elif modo == 3:
-        anunciar(f"Desafio Especial iniciado! {jogo.nomes[0]} versus Luna (Nível Imbatível).", interromper=False, pausar_depois=True)
+        anunciar(f"Desafio Sádico Iniciado! {jogo.nomes[0]} versus Luna (Inferência Bayesiana e Monte Carlo).", interromper=False, pausar_depois=True)
     else:
         anunciar(f"Partida em Duplas iniciada! Sua dupla: {jogo.nomes[0]} e {jogo.nomes[2]}.", interromper=False, pausar_depois=True)
         anunciar(f"Dupla adversária: {jogo.nomes[1]} e {jogo.nomes[3]}.", interromper=False, pausar_depois=True)
